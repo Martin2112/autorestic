@@ -9,7 +9,7 @@ import (
 
 var cronCmd = &cobra.Command{
 	Use:   "cron",
-	Short: "Run cron job for automated backups",
+	Short: "Run cron job for automated backups or show schedule",
 	Long:  `Intended to be mainly triggered by an automated system like systemd or crontab. For each location checks if a cron backup is due and runs it.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		internal.GetConfig()
@@ -25,4 +25,6 @@ var cronCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(cronCmd)
 	cronCmd.Flags().BoolVar(&flags.CRON_LEAN, "lean", false, "only output information about actual backups")
+	cronCmd.Flags().BoolVar(&flags.CRON_SHOW, "show", false, "do not run backups, print last time backups ran and next schedule")
+	cronCmd.Flags().BoolVar(&flags.CRON_UNIX, "unix", false, "print times in Unix format, default is RFC3339")
 }

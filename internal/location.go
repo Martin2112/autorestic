@@ -445,15 +445,24 @@ func (l Location) RunCron() error {
 	last := time.Unix(lock.GetCron(l.name), 0)
 	next := schedule.Next(last)
 	now := time.Now()
-	if now.After(next) {
-		lock.SetCron(l.name, now.Unix())
-		errs := l.Backup(true, "")
-		if len(errs) > 0 {
-			return fmt.Errorf("Failed to backup location \"%s\":\n%w", l.name, errors.Join(errs...))
+
+	if flags.CRON_SHOW {
+		if flags.CRON_UNIX {
+			colors.Body.Printf("%s,%d,%d,\"%s\"", l.name, last.Unix(), next.Unix(), l.Cron)
+		} else {
+			colors.Body.Printf("%s,%s,%s,\"%s\"", l.name, last.Format(time.RFC3339), next.Format(time.RFC3339), l.Cron)
 		}
 	} else {
-		if !flags.CRON_LEAN {
-			colors.Body.Printf("Skipping \"%s\", not due yet.\n", l.name)
+		if now.After(next) {
+			lock.SetCron(l.name, now.Unix())
+			errs := l.Backup(true, "")
+			if len(errs) > 0 {
+				return fmt.Errorf("Failed to backup location \"%s\":\n%w", l.name, errors.Join(errs...))
+			}
+		} else {
+			if !flags.CRON_LEAN {
+				colors.Body.Printf("Skipping \"%s\", not due yet.\n", l.name)
+			}
 		}
 	}
 	return nil
